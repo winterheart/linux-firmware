@@ -16,22 +16,87 @@ diff or preferably a git pull request to:
       linux-firmware@kernel.org
 and also cc: to related mailing lists.
 
-If your commit adds new firmware, it must update the WHENCE file to
-clearly state the license under which the firmware is available, and
+If your commit adds new firmware, it must update the WHENCE and WHENCE.yaml
+files to clearly state the license under which the firmware is available, and
 that it is redistributable. Being redistributable includes ensuring
 the firmware license provided includes an implicit or explicit
 patent grant to end users to ensure full functionality of device
 operation with the firmware. If the license is long and involved, it's
 permitted to include it in a separate file and refer to it from the
-WHENCE file ('See LICENSE.foo for details.').
+WHENCE and WHENCE.yaml files ('See LICENSE.foo for details.').
 And if it were possible, a changelog of the firmware itself.
 
-Run 'make check' to check that WHENCE is consistent with the
-repository contents.
+Run 'make check' and './linux-firmware.py check' to check that WHENCE is
+consistent with the repository contents.
 
 Ideally, your commit should contain a Signed-Off-By: from someone
 authoritative on the licensing of the firmware in question (i.e. from
 within the company that owns the code).
+
+WHENCE.yaml file
+================
+
+WHENCE.yaml file is YAML 1.2 compliant file with structured data about
+firmware files. Particular entry as follows:
+
+  - # Name of entry, usually the name of the module that loads firmware
+    name: rtl8xxxu
+    # Description of entry
+    description: Realtek 802.11n WLAN driver for RTL8XXX USB devices
+    # List of categories where module resides
+    category:
+      - drivers/net/wireless
+    # Vendor of firmware or device
+    vendor: Realtek
+    # License entry
+    license:
+      # Name of license file; May be "Redistributable" (if no license file)
+      # or "Unknown" (if redistribution status is unknown)
+      name: LICENCE.rtlwifi_firmware.txt
+      # Optional: Copyright notice
+      copyright: >
+        Copyright (c) 2010, Realtek Semiconductor Corporation. All rights
+        reserved.
+      # Optional: Additional info for license information. If no license file,
+      # add here cause for permission to distribute. Add
+      # SPDX-License-Identifier (https://spdx.dev/ids/) if applicable
+      info: Redistributable
+    # Some descriptive information about firmware
+    info: |
+      rtl8723au taken from Realtek driver
+      rtl8723A_WiFi_linux_v4.1.3_6044.20121224
+      Firmware is embedded in the driver as data statements. This info has
+      been extracted into a binary file.
+    # List of firmware files
+    files:
+      - # Filename
+        name: rtlwifi/rtl8723aufw_A.bin
+        # Optional: version of firmware
+        version: "35.7"
+        # Optional: additional information about particular file
+        info: Taken from old version
+        # Optional: If there sources for firmware, add them as list here
+        source:
+          - rtlwifi/src/
+      - name: rtlwifi/rtl8192eu_nic.bin
+      - name: rtlwifi/rtl8723bs_nic.bin
+    # Optional: List of symlinks for being installed. Please note, link should
+    # point to file from directory where link being placed, i.e.:
+    # rtlwifi/rtl8192eefw.bin -> rtl8192eu_nic.bin is means that in directory
+    # rtlwifi will be created rtl8192eefw.bin that points to rtl8192eu_nic.bin
+    # in that directory
+    links:
+      - # Symlink name
+        name: rtlwifi/rtl8192eefw.bin
+        # Target filename, it should exists
+        target: rtl8192eu_nic.bin
+
+After adding entry run './firmware-install.py check' to verify correctness
+of entry.
+
+If firmware files comes with different licenses and/or different sources, add
+them in separate entries (see './firmware-install.py info -n ti_usb_3410_5052'
+or './firmware-install.py info -n cxgb3' as example).
 
 
 WARNING:
